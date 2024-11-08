@@ -1,57 +1,48 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
+
 
 public class Player : MonoBehaviour
 {
-    private bool isAttacking=false;
-    private Animator _anim;
-    private bool _insideComboWindow=false;
-    private bool _comboContinues=false;
-    private ComboController _comboController;
-    // Start is called before the first frame update
-    void Start()
+    private GameStateManager gameStateManager;
+    [SerializeField] private PlayerInventorySO playerInventory;
+    [SerializeField] private TownInventorySO townInventory;
+    private void Awake()
     {
-        _anim=GetComponent<Animator>();
-        _comboController=GetComponent<ComboController>();
+        gameStateManager = GameStateManager.instance;
     }
-
-    public void OnAttack()
+    private void OnEnable()
     {
-        
-        if (!isAttacking)
-        {
-            isAttacking = true;
-            _anim.SetTrigger("TriggerAttack");
-        }
-        else 
-            if (_insideComboWindow)
-        {
-            _comboContinues = true;
-        }
+        gameStateManager.OnGameStateChanged += OnGameStateChanged;
     }
-    public void OnAttackAnimationFinished()
+    private void OnDisable()
     {
-        _comboController.CurrentCombo=_comboController.CurrentCombo+1;
-        if (_comboContinues)
-        {
-            _comboContinues = false;
-            _anim.SetTrigger("TriggerAttack");
-        }
-        else
-        {
-            isAttacking = false;
-            _comboController.CurrentCombo = 1;
-            Debug.Log("entered");
-        }
-            
+        gameStateManager.OnGameStateChanged -= OnGameStateChanged;
     }
-    public void SetInsideComboWindow(int flag)
+    private void OnGameStateChanged(GameStateManager.GameState state)
     {
-        if (flag == 0) { _insideComboWindow= true; }
-            
-        else if (flag == 1) { _insideComboWindow= false; }
-            
+        switch (state)
+        {
+            case GameStateManager.GameState.InEncounter:
+                Debug.Log("Player is in encounter");
+                break;
+            case GameStateManager.GameState.InTown:
+                AddPlayerInventoryToTownInventory();
+                break;
+            case GameStateManager.GameState.MainMenu:
+                Debug.Log("Player is in main menu");
+                break;
+            case GameStateManager.GameState.GameOver:
+                Debug.Log("Player is in game over");
+                break;
+        }
     }
+    public void AddPlayerInventoryToTownInventory()
+    {
+        foreach (var item in playerInventory.GetInventory())
+        {
+            townInventory.AddItem(item.Key, item.Value);
+        }
+        playerInventory.ResetInventory();
+    }
+    
 }

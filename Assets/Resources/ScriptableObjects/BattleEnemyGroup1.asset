@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cad4091e7858bb848b8fdb9375e6a9af, type: 3}
+  m_Name: BattleEnemyGroup1
+  m_EditorClassIdentifier: 
+  _enemyGroup:
+  - {fileID: 1893700810808017361, guid: 41025b092dc22ff458503ef68eb2ad02, type: 3}
+  - {fileID: 9132124300031442624, guid: 7edff30c6d9790748aa62d90c7813cf9, type: 3}
+  - {fileID: 1893700810808017361, guid: 41025b092dc22ff458503ef68eb2ad02, type: 3}
