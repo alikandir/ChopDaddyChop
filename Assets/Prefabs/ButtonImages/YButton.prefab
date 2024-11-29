@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8164994551302541801}
   - component: {fileID: 7471670870223466327}
   - component: {fileID: 7788489525112581511}
+  - component: {fileID: 563061886811015041}
   m_Layer: 5
   m_Name: YButton
   m_TagString: Untagged
@@ -75,3 +76,16 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &563061886811015041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5822897663587032798}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b85d1c07040974f93b6345357c6324, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _pattern: 1

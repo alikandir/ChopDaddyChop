@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3906994456853978856}
   - component: {fileID: 5045482542773637218}
   - component: {fileID: 1138917646561059935}
+  - component: {fileID: 9108596746098880085}
   m_Layer: 5
   m_Name: XButton
   m_TagString: Untagged
@@ -75,3 +76,16 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &9108596746098880085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 873075059903914994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b85d1c07040974f93b6345357c6324, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _pattern: 0
