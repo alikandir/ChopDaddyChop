@@ -4,14 +4,16 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "PlayerInventory", menuName = "New PlayerInventory")]
 public class PlayerInventorySO : ScriptableObject
 {
-    private Dictionary<string, int> inventory = new Dictionary<string, int>();
-    public Dictionary<string,int> GetInventory()
+    private Dictionary<Vegetable.VegetableType, int> inventory = new Dictionary<Vegetable.VegetableType, int>();
+    public Dictionary<Vegetable.VegetableType,int> GetInventory()
     {
         return inventory;
     }
-    
+    private void OnEnable() {
+        ResetInventory();
+    }
 
-    public void AddItem(string item, int quantity)
+    public void AddItem(Vegetable.VegetableType item, int quantity)
     {
         if (inventory.ContainsKey(item))
         {
@@ -22,7 +24,7 @@ public class PlayerInventorySO : ScriptableObject
             inventory.Add(item, quantity);
         }
     }
-    public void RemoveItem(string item, int quantity)
+    public void RemoveItem(Vegetable.VegetableType item, int quantity)
     {
         if (inventory.ContainsKey(item))
         {
@@ -33,7 +35,7 @@ public class PlayerInventorySO : ScriptableObject
             }
         }
     }
-    public int GetQuantity(string item)
+    public int GetQuantity(Vegetable.VegetableType item)
     {
         if (inventory.ContainsKey(item))
         {

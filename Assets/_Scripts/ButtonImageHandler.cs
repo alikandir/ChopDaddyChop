@@ -19,15 +19,20 @@ public class ButtonImageHandler : MonoBehaviour
     //Set Spawn and End points on scene
     [SerializeField] private Transform spawnPoint;
     [SerializeField] private Transform endPoint;
+    [SerializeField] private Transform checkingPoint;
     public float SecPerBeat{get;set;}
     Vector3 offSet= new Vector3(-10,0,0);
-    [SerializeField] private float _speedAdjustmentToPosition=1.5f;
+    private Player _player;
+    private Animator _playerAnim;
+    
     private GameObject _currentButtonToCheck;
     private void Start() {
         
         _PatternToImage.Add(BattlePatternElement.XSlash,_XSlashImage);
         _PatternToImage.Add(BattlePatternElement.YSlash,_YSlashImage);
         _PatternToImage.Add(BattlePatternElement.ADefend,_ADefendImage);
+        _player = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+        _playerAnim = _player.gameObject.GetComponent<Animator>();
 
     }
     public void SpawnButton(BattlePatternElement pattern)
@@ -42,10 +47,11 @@ public class ButtonImageHandler : MonoBehaviour
         
         Vector3 startPosition = spawnPoint.position;
         Vector3 endPosition = endPoint.position;
+        Vector3 checkingPosition = checkingPoint.position;
 
         // Calculate constant speed
-        float speed = Vector3.Distance(startPosition, endPosition) / (SecPerBeat * _speedAdjustmentToPosition); 
-
+        float speed = Vector3.Distance(startPosition, checkingPosition) / SecPerBeat; 
+        RectTransform buttonRect = button.GetComponent<RectTransform>();
         while (button != null) // Continue moving until the button is destroyed
         {
             if (_currentButtonToCheck == null) _currentButtonToCheck = button;
@@ -53,8 +59,11 @@ public class ButtonImageHandler : MonoBehaviour
             
             // Move the button at a constant speed
             button.transform.position += (endPosition - startPosition).normalized * speed * Time.deltaTime;
-            
 
+            if (buttonRect.anchoredPosition.x<-875f && button.GetComponent<ButtonImage>().IsBeingChecked){
+                OnButtonFailed(button.GetComponent<ButtonImage>().GetBattlePatternElement().ToString());
+                button.GetComponent<ButtonImage>().IsBeingChecked=false;
+            }
             // Check if it has passed the end point
             if (Vector3.Distance(button.transform.position, endPosition) < 10f)
             {
@@ -68,7 +77,7 @@ public class ButtonImageHandler : MonoBehaviour
         
         if (_currentButtonToCheck == null) {
             return false;}
-        return _currentButtonToCheck.GetComponent<RectTransform>().anchoredPosition.x < -480f && _currentButtonToCheck.GetComponent<RectTransform>().anchoredPosition.x>-720f ; //I manually tested these positions on the scene view.
+        return _currentButtonToCheck.GetComponent<RectTransform>().anchoredPosition.x < -610f && _currentButtonToCheck.GetComponent<RectTransform>().anchoredPosition.x>-875f ; //I manually tested these positions on the scene view.
     }
     public bool CheckButtonToActionName(string actionName)
     {
@@ -86,34 +95,52 @@ public class ButtonImageHandler : MonoBehaviour
         }
     }
     public void OnButtonFailed(string actionName){
+        
         if (_currentButtonToCheck == null) return;
+        if (!_currentButtonToCheck.GetComponent<ButtonImage>().IsBeingChecked) return;
+        _currentButtonToCheck.GetComponent<ButtonImage>().IsBeingChecked=false;
+        
         switch (_currentButtonToCheck.GetComponent<ButtonImage>().GetBattlePatternElement().ToString())
         {
             case "XSlash":
                 _currentButtonToCheck.GetComponent<Image>().sprite = _XSlashFailedImage;
+                BattleEncounterManager.instance.ResetCombo();
                 break;
             case "YSlash":
                 _currentButtonToCheck.GetComponent<Image>().sprite = _YSlashFailedImage;
+                BattleEncounterManager.instance.ResetCombo();
                 break;
             case "ADefend":
                 _currentButtonToCheck.GetComponent<Image>().sprite = _ADefendFailedImage;
+                BattleEncounterManager.instance.OnFailToDefend();
                 break;
             default:
                 break;
         }
     }
-    public void OnButtonSuccess(string actionName){
+    public void OnButtonSuccess(string actionName, EnemyBase currentEnemy){
         if (_currentButtonToCheck == null) return;
+        if (!_currentButtonToCheck.GetComponent<ButtonImage>().IsBeingChecked) return;
+        _currentButtonToCheck.GetComponent<ButtonImage>().IsBeingChecked=false;
         switch (_currentButtonToCheck.GetComponent<ButtonImage>().GetBattlePatternElement().ToString())
         {
             case "XSlash":
                 _currentButtonToCheck.GetComponent<Image>().sprite = _XSlashSuccessImage;
+                currentEnemy.TakeDamage(_player.GetPlayerDamage()*BattleEncounterManager.instance.GetComboDamageMultiplier());
+                currentEnemy.GetComponent<Animator>().SetTrigger("Hurt");
+                _playerAnim.SetTrigger("LightAttack");
+
                 break;
             case "YSlash":
                 _currentButtonToCheck.GetComponent<Image>().sprite = _YSlashSuccessImage;
+                currentEnemy.TakeDamage(_player.GetPlayerDamage()*1.5f*BattleEncounterManager.instance.GetComboDamageMultiplier());
+                currentEnemy.GetComponent<Animator>().SetTrigger("Hurt");
+                _playerAnim.SetTrigger("HeavyAttack");
                 break;
             case "ADefend":
                 _currentButtonToCheck.GetComponent<Image>().sprite = _ADefendSuccessImage;
+                currentEnemy.GetComponent<Animator>().SetTrigger("Attack");
+                _playerAnim.SetTrigger("Defend");
                 break;
             default:
                 break;

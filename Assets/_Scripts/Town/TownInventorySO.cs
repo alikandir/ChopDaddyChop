@@ -4,9 +4,9 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "TownInventory", menuName = "TownInventory")]
 public class TownInventorySO : ScriptableObject
 {
-    private Dictionary<String, int> inventory = new Dictionary<String, int>();
+    private Dictionary<Vegetable.VegetableType, int> inventory = new Dictionary<Vegetable.VegetableType, int>();
 
-    public void AddItem(String item, int quantity)
+    public void AddItem(Vegetable.VegetableType item, int quantity)
     {
         if (inventory.ContainsKey(item))
         {
@@ -17,7 +17,10 @@ public class TownInventorySO : ScriptableObject
             inventory.Add(item, quantity);
         }
     }
-    public void RemoveItem(String item, int quantity)
+    private void OnEnable() {
+        ResetInventory();
+    }
+    public void RemoveItem(Vegetable.VegetableType item, int quantity)
     {
         if (inventory.ContainsKey(item))
         {
@@ -28,13 +31,13 @@ public class TownInventorySO : ScriptableObject
             }
         }
     }
-    public int GetQuantity(String item)
+    public int GetQuantity(Vegetable.VegetableType item)
     {
         if (inventory.ContainsKey(item))
         {
             return inventory[item];
         }
-        Debug.Log("Item not found in inventory");
+        
         return 0;
         
     }

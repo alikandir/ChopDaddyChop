@@ -1,15 +1,24 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 
 public class Player : MonoBehaviour
 {
+    [SerializeField] private float _damage;
+    public float GetPlayerDamage(){return _damage;}
+    
     private GameStateManager gameStateManager;
     [SerializeField] private PlayerInventorySO playerInventory;
     [SerializeField] private TownInventorySO townInventory;
+    
     private void Awake()
     {
         gameStateManager = GameStateManager.instance;
     }
+    private void Start() {
+        
+    }
+        
     private void OnEnable()
     {
         gameStateManager.OnGameStateChanged += OnGameStateChanged;
@@ -26,7 +35,8 @@ public class Player : MonoBehaviour
                 Debug.Log("Player is in encounter");
                 break;
             case GameStateManager.GameState.InTown:
-                AddPlayerInventoryToTownInventory();
+                
+                
                 break;
             case GameStateManager.GameState.MainMenu:
                 Debug.Log("Player is in main menu");
@@ -36,13 +46,15 @@ public class Player : MonoBehaviour
                 break;
         }
     }
-    public void AddPlayerInventoryToTownInventory()
-    {
-        foreach (var item in playerInventory.GetInventory())
-        {
-            townInventory.AddItem(item.Key, item.Value);
-        }
-        playerInventory.ResetInventory();
+    
+    public void TakeDamage(float _incomingDamage){
+        StaminaBarManager.instance.DecreaseStamina(_incomingDamage);
+       
     }
+    public void AddItemToInventory(Vegetable.VegetableType type, int _rewardQuantity){
+        playerInventory.AddItem(type, _rewardQuantity);
+        
+    }
+    
     
 }

@@ -40,6 +40,9 @@ public class RhytmConductor : MonoBehaviour
         _buttonImageHandler.SecPerBeat = _secPerBeat;
         _musicSource.Play();
     }
+    public void StopSong(){
+        _musicSource.Stop();
+    }
 
     private void Update() {
         if (!_songStarted) return;

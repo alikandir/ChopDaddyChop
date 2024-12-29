@@ -47,6 +47,6 @@ MonoBehaviour:
   _easyBattleGroups:
   - {fileID: 11400000, guid: cc9621bdb9cbde04ca63afdd05adfcd3, type: 2}
   _mediumBattleGroups:
-  - {fileID: 11400000, guid: cc9621bdb9cbde04ca63afdd05adfcd3, type: 2}
+  - {fileID: 11400000, guid: 6d24cf00299abe7468e01798948ea27c, type: 2}
   _hardBattleGroups:
-  - {fileID: 11400000, guid: cc9621bdb9cbde04ca63afdd05adfcd3, type: 2}
+  - {fileID: 11400000, guid: 422b0737ba2344e4188dc8b964cffffe, type: 2}

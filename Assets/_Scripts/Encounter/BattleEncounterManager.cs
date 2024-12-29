@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class BattleEncounterManager : MonoBehaviour
@@ -16,49 +18,78 @@ public class BattleEncounterManager : MonoBehaviour
     [SerializeField] private GameObject _FrameOfButtons;
     private List<EnemyBase> enemiesList = new List<EnemyBase>();
     private EnemyBase _currentEnemy;
+    private int _enemyDeathCount=0;
     [Header("Music")]
     [SerializeField] private AudioClip _battleMusicEasy;
     [SerializeField] private AudioClip _battleMusicMedium;
     [SerializeField] private AudioClip _battleMusicHard;
     [SerializeField] private ButtonImageHandler _buttonImageHandler;
     private int _comboCounter=0;
+    
     [SerializeField] private TextMeshProUGUI _comboCounterText;
+    private Player _player;
+    public static BattleEncounterManager instance;
+    private void Awake() {
+        if(instance==null){instance=this;}
+    }
     private void Start()
     {
-        InitiateBattle();
         _FrameOfButtons.SetActive(false);
         StartCoroutine(InitiateBattleUI());
-        
+        _player = GameObject.FindWithTag("Player").GetComponent<Player>();
+        InitiateBattle();
     }
     public void InitiateBattle()
     {
+        float animationSpeed = 1f;
         var diceRoll = Random.Range(0, 100);
-        if (diceRoll < 70)
+        if (diceRoll < 60)
         {
             difficulty=EncounterDifficulty.Easy;
+            animationSpeed = 1f;
         }
-        else if (diceRoll >= 70 && diceRoll < 90)
+        else if (diceRoll >= 60 && diceRoll < 80)
         {
             difficulty=EncounterDifficulty.Medium;
+            animationSpeed = 1.3f;
         }
         else
         {
             difficulty=EncounterDifficulty.Hard;
+            animationSpeed = 1.7f;
         }
+        _player.GetComponent<Animator>().speed = animationSpeed;
         currentBattleGroup = _battleEncounterFactory.GetRandomBattleGroup(difficulty);
         Vector3 offsetIncrement = Vector3.zero; 
-        foreach (EnemyBase enemy in currentBattleGroup.EnemyGroup)
+        foreach (EnemyBase Enemy in currentBattleGroup.EnemyGroup)
         {
-            Instantiate(enemy, _spawnLocation.position+offsetIncrement, Quaternion.identity);
+            var enemy = Instantiate(Enemy, _spawnLocation.position+offsetIncrement, Quaternion.identity);
             offsetIncrement += spawnLocationOffset;
             enemiesList.Add(enemy);
+            enemy.GetComponent<Animator>().speed = animationSpeed;
+            enemy.OnEnemyDied += HandleEnemyDeath;
         }
         _currentEnemy=enemiesList[0];
+        
     }
+    private void HandleEnemyDeath(){
+        enemiesList.Remove(_currentEnemy);
+        _player.AddItemToInventory(_currentEnemy.GetComponent<Vegetable>().GetVegetableType(), 1);
+        
+        _currentEnemy.GetComponent<Animator>().SetTrigger("Death");
+        _enemyDeathCount++;
+        _currentEnemy=null;
+
+        foreach (EnemyBase enemy in enemiesList){
+            enemy.transform.DOMove(enemy.transform.position-spawnLocationOffset, _buttonImageHandler.SecPerBeat);
+        }
+        
+    }
+    
     private IEnumerator InitiateBattleUI()
     {
         _GetReadyText.SetActive(true);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(1f);
         _GetReadyText.SetActive(false);
         _FrameOfButtons.SetActive(true);
         StartBattle();
@@ -66,16 +97,17 @@ public class BattleEncounterManager : MonoBehaviour
     }
     private void StartBattle()
     {
+        
         switch (difficulty)
         {
             case EncounterDifficulty.Easy:
-                RhytmConductor.instance.SetAudioClip(_battleMusicEasy, 100, 0, 16);
+                RhytmConductor.instance.SetAudioClip(_battleMusicEasy, 80, 0, 44);
                 break;
             case EncounterDifficulty.Medium:
-                RhytmConductor.instance.SetAudioClip(_battleMusicMedium, 120, 0, 16);
+                RhytmConductor.instance.SetAudioClip(_battleMusicMedium, 100, 0, 43.3f);
                 break;
             case EncounterDifficulty.Hard:
-                RhytmConductor.instance.SetAudioClip(_battleMusicHard, 140, 0, 16);
+                RhytmConductor.instance.SetAudioClip(_battleMusicHard, 120, 0, 44);
                 break;
         }
         RhytmConductor.instance.StartSong();
@@ -84,43 +116,94 @@ public class BattleEncounterManager : MonoBehaviour
     
     private IEnumerator FightControl()
     {
-        while (_currentEnemy.IsAlive){
+        int increment = 0;
+        while (true){
             
-            BattlePatternElement[] pattern = _currentEnemy.BattlePattern;
-            foreach (BattlePatternElement element in pattern)
+            yield return new WaitForSeconds(_buttonImageHandler.SecPerBeat);
+            if (_currentEnemy!=null){
+                BattlePatternElement[] pattern = _currentEnemy.BattlePattern;
+                increment=increment%(pattern.Length);
+                _buttonImageHandler.SpawnButton(pattern[increment]);
+                increment++;
+                
+            }
+                
+            else
             {
-                _buttonImageHandler.SpawnButton(element);
-                yield return new WaitForSeconds(_buttonImageHandler.SecPerBeat);
+        
+                if (TryGetNextEnemy(out EnemyBase nextEnemy))
+                {
+                    TransitionToNextEnemy(nextEnemy);
+                }
+                else
+                {
+                    BattleWon();
+                    yield break;
+                }
+        
             }
         }
+    }
+    private void TransitionToNextEnemy(EnemyBase nextEnemy)
+    {   
+        
+        _currentEnemy = nextEnemy;
+    }
+    private bool TryGetNextEnemy(out EnemyBase nextEnemy)
+    {
+        nextEnemy = null;
+
+        if (enemiesList.Count > 0)
+            {
+                nextEnemy = enemiesList[0];
+                return true;
+                
+            }
+        return false;
     }
     public void OnButtonPressed(InputAction.CallbackContext context)
     {
         if (context.performed)
         {
             if (!_buttonImageHandler.IsInCheckArea()){
-                _comboCounter=0;
-                _comboCounterText.text = "COMBO:" + _comboCounter.ToString();
+                ResetCombo();
                 return;
             }
             else
             {
                if(!_buttonImageHandler.CheckButtonToActionName(context.action.name)){
                     _buttonImageHandler.OnButtonFailed(context.action.name);
-                    _comboCounter=0;
-                    _comboCounterText.text = "COMBO:" + _comboCounter.ToString();
+                    ResetCombo();
                     return;
                }
                else
                {
                    _comboCounter++;
-                   _buttonImageHandler.OnButtonSuccess(context.action.name);
+                   _buttonImageHandler.OnButtonSuccess(context.action.name,_currentEnemy);
                    _comboCounterText.text = "COMBO:" + _comboCounter.ToString();
                }
             
             }
         }
     }   
-    
-
+    public void OnFailToDefend()
+    {
+        _player.TakeDamage(_currentEnemy.GetDamage);
+        _player.GetComponent<Animator>().SetTrigger("Hurt");
+        ResetCombo();
+    }
+    public void BattleWon()
+    {
+        _FrameOfButtons.SetActive(false);
+        RhytmConductor.instance.StopSong();
+        GameStateManager.instance.SetGameState(GameStateManager.GameState.BetweenEncounter);
+        SceneManager.LoadScene("BetweenEncounterScene");
+    }
+    public void ResetCombo(){
+        _comboCounter=0;
+        _comboCounterText.text = "COMBO:" + _comboCounter.ToString();
+    }
+    public float GetComboDamageMultiplier(){
+        return (_comboCounter/10)+1f;
+    }
 }
