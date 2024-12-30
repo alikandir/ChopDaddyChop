@@ -8,6 +8,7 @@ public class GameStateManager : MonoBehaviour
     public GameState currentGameState;
     public event Action<GameState> OnGameStateChanged;
     public int _daysPassed=0;
+    private float _townHunger=500;
     private void Awake()
     {
         if (instance != null)
@@ -38,7 +39,12 @@ public class GameStateManager : MonoBehaviour
     
     public void PassDay(){
         _daysPassed++;
-        print("Day passed" + _daysPassed.ToString());
+        if (_daysPassed==14){
+            SceneManager.LoadScene("EndingScene");
+        }
     }
+    public float GetTownHunger(){
+        return _townHunger;
+    }   
 
 }

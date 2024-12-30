@@ -43,12 +43,12 @@ public class BattleEncounterManager : MonoBehaviour
     {
         float animationSpeed = 1f;
         var diceRoll = Random.Range(0, 100);
-        if (diceRoll < 60)
+        if (diceRoll < 50)
         {
             difficulty=EncounterDifficulty.Easy;
             animationSpeed = 1f;
         }
-        else if (diceRoll >= 60 && diceRoll < 80)
+        else if (diceRoll >= 50 && diceRoll < 85)
         {
             difficulty=EncounterDifficulty.Medium;
             animationSpeed = 1.3f;

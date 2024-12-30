@@ -18,15 +18,15 @@ public class TownCookingLogic : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _cabbageAmount;
     [SerializeField] private TextMeshProUGUI _currentDayText;
     [SerializeField] private Slider _townHungerSlider;
-    private void Awake()
-    {
-        gameStateManager = GameStateManager.instance;
-        UpdateTownInventoryUI();
-    }
+    
     private void Start() {
+        gameStateManager = GameStateManager.instance;
+        _townHunger=gameStateManager.GetTownHunger();
+        UpdateTownInventoryUI();
         _townHunger-=_townHungerDailyChange;
         gameStateManager.PassDay();
         _currentDayText.text = "Day "+gameStateManager._daysPassed.ToString();
+        UpdateTownHungerUI();
         if (StaminaBarManager.instance.GetStamina()>0){
             AddPlayerInventoryToTownInventory();
         }
@@ -35,19 +35,18 @@ public class TownCookingLogic : MonoBehaviour
         StaminaBarManager.instance.ResetStamina();
 
     }
-    private void OnEnable()
-    {
-        gameStateManager.OnGameStateChanged += OnGameStateChanged;
-    }
-    private void OnDisable()
-    {
-        gameStateManager.OnGameStateChanged -= OnGameStateChanged;
-    }
-    private void OnGameStateChanged(GameStateManager.GameState state)
-    {
-        
-        
-    }
+    // Didn't use it at the end.
+    // private void OnEnable()
+    // {
+    //     gameStateManager.OnGameStateChanged += OnGameStateChanged;
+    // }
+    // private void OnDisable()
+    // {
+    //     gameStateManager.OnGameStateChanged -= OnGameStateChanged;
+    // }
+    // private void OnGameStateChanged(GameStateManager.GameState state)
+    // {
+    // }
     public void OnCookButtonPressed(RecipesSO recipe)
     {   
         bool allItemsAvailable=false;
@@ -72,6 +71,7 @@ public class TownCookingLogic : MonoBehaviour
                 return;
             }
             _townHunger+=recipe.HungerHeal;
+            UpdateTownHungerUI();
             UpdateTownInventoryUI();
         }
     }
@@ -86,6 +86,9 @@ public class TownCookingLogic : MonoBehaviour
         _carrotAmount.text = _townInventory.GetQuantity(Vegetable.VegetableType.Carrot).ToString();
         _cabbageAmount.text = _townInventory.GetQuantity(Vegetable.VegetableType.Cabbage).ToString();
         
+    }
+    private void UpdateTownHungerUI(){
+        _townHungerSlider.value = _townHunger/_maxTownHunger;
     }
 
     public void AddPlayerInventoryToTownInventory()
