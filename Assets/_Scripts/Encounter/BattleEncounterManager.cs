@@ -51,7 +51,7 @@ public class BattleEncounterManager : MonoBehaviour
         else if (diceRoll >= 50 && diceRoll < 85)
         {
             difficulty=EncounterDifficulty.Medium;
-            animationSpeed = 1.3f;
+            animationSpeed = 1.3f; // I just eyeballed these values. There is no math formula behind.
         }
         else
         {
@@ -122,7 +122,7 @@ public class BattleEncounterManager : MonoBehaviour
             yield return new WaitForSeconds(_buttonImageHandler.SecPerBeat);
             if (_currentEnemy!=null){
                 BattlePatternElement[] pattern = _currentEnemy.BattlePattern;
-                increment=increment%(pattern.Length);
+                increment=increment% pattern.Length;
                 _buttonImageHandler.SpawnButton(pattern[increment]);
                 increment++;
                 
@@ -146,7 +146,7 @@ public class BattleEncounterManager : MonoBehaviour
     }
     private void TransitionToNextEnemy(EnemyBase nextEnemy)
     {   
-        
+        // there was a transition logic here at first but I removed it, there is an implementation in the HandleEnemyDeath method
         _currentEnemy = nextEnemy;
     }
     private bool TryGetNextEnemy(out EnemyBase nextEnemy)

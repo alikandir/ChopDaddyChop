@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class RhytmConductor : MonoBehaviour
 {
+    // resource paper: www.gamedeveloper.com/audio/coding-to-the-beat---under-the-hood-of-a-rhythm-game-in-unity
     [SerializeField] private float _songBpm;
     private float _secPerBeat; // Number of seconds for each beat
     private float _songPosition;
